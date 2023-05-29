@@ -1,12 +1,13 @@
+import { MongoClient, ObjectId } from "mongodb";
 import MeetupDetail from "../../components/meetups/MeetupDetail";
 
-function MeetupDetails() {
+function MeetupDetails(props) {
   return (
     <MeetupDetail
-      image="https://a.cdn-hotels.com/gdcs/production107/d1849/225504a0-f586-11e8-a5a3-0242ac110006.jpg?impolicy=fcrop&w=1600&h=1066&q=medium"
-      title="First Meetup"
-      address="Some Street 5, Some City"
-      description="This is a first meetup"
+      image={props.meetupData.image}
+      title={props.meetupData.title}
+      address={props.meetupData.address}
+      description={props.meetupData.description}
     />
   );
 }
@@ -17,37 +18,51 @@ function MeetupDetails() {
 // 아래 하드코딩된 예제 에서는 id 값인 'm1', 'm2'에 대한 경로를 생성한다. fallback: false 속성은 빌드 시 생성되지 않은 경로에 접근할 경우 404 에러를 반환한다.
 
 export async function getStaticPaths() {
+  const client = await MongoClient.connect(
+    "mongodb+srv://hoonnn:asdfqwer1234@cluster0.dxukbe4.mongodb.net/meetups"
+  );
+
+  const db = client.db();
+
+  const meetupsCollection = db.collection("meetups");
+
+  const meetups = await meetupsCollection.find({}, { _id: 1 }).toArray(); // _id는 1개만 포함하고 나머지 필드는 가져오지 않겠다는 의미
+
+  client.close();
+
   return {
     fallback: false,
-    paths: [
-      {
-        params: {
-          meetupId: "m1",
-        },
-      },
-      {
-        params: {
-          meetupId: "m2",
-        },
-      },
-    ],
+    paths: meetups.map((meetup) => ({
+      params: { meetupId: meetup._id.toString() },
+    })),
   };
 }
 
 export async function getStaticProps(context) {
   const meetupId = context.params.meetupId;
 
-  console.log(meetupId);
+  const client = await MongoClient.connect(
+    "mongodb+srv://hoonnn:asdfqwer1234@cluster0.dxukbe4.mongodb.net/meetups"
+  );
+
+  const db = client.db();
+
+  const meetupsCollection = db.collection("meetups");
+
+  const selectedMeetup = await meetupsCollection.findOne({
+    _id: new ObjectId(meetupId),
+  });
+
+  client.close();
 
   return {
     props: {
       meetupData: {
-        image:
-          "https://a.cdn-hotels.com/gdcs/production107/d1849/225504a0-f586-11e8-a5a3-0242ac110006.jpg?impolicy=fcrop&w=1600&h=1066&q=medium",
-        id: meetupId,
-        title: "First Meetup",
-        address: "Some Street 5, Some City",
-        description: "This is a first meetup",
+        id: selectedMeetup._id.toString(),
+        title: selectedMeetup.title,
+        address: selectedMeetup.address,
+        image: selectedMeetup.image,
+        description: selectedMeetup.description,
       },
     },
   };
