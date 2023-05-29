@@ -27,6 +27,7 @@ export async function getStaticProps() {
     props: {
       meetups: DUMMY_MEETUPS,
     },
+    revalidate: 10, // 정적 페이지가 재생성되는 시간 설정 (10초) 10초가 지나면 다음 요청에서는 최신 데이터를 가진 새로운 페이지를 생성한다.
   };
 }
 
