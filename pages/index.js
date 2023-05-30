@@ -1,8 +1,20 @@
+import Head from "next/head";
 import { MongoClient } from "mongodb";
 import MeetupList from "../components/meetups/MeetupList";
 
 function HomePage(props) {
-  return <MeetupList meetups={props.meetups} />;
+  return (
+    <>
+      <Head>
+        <title>NextJS Meetups App</title>
+        <meta
+          name="description"
+          content="Browse a huge list of highly active React meetups!"
+        />
+      </Head>
+      <MeetupList meetups={props.meetups} />;
+    </>
+  );
 }
 
 // getServerSideProps 함수는 요청마다 호출되는 SSR 데이터 패칭 함수이다. 각 페이지 요청마다 실행된다.
